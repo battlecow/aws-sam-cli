@@ -44,7 +44,9 @@ class InvokeContext(object):
                  docker_network=None,
                  log_file=None,
                  skip_pull_image=None,
-                 aws_profile=None):
+                 aws_profile=None,
+                 image=None,
+                 namespace='default'):
         """
         Initialize the context
 
@@ -58,6 +60,8 @@ class InvokeContext(object):
             created
         :param bool skip_pull_image: Should we skip pulling the Docker container image?
         :param string aws_profile: Name of the profile to fetch AWS credentials from
+        :param string image: Kubernetes image to use
+        :param string namespace: Kubernetes namespace to deploy pod
         """
 
         self._template_file = template_file
@@ -70,6 +74,8 @@ class InvokeContext(object):
         self._log_file = log_file
         self._skip_pull_image = skip_pull_image
         self._aws_profile = aws_profile
+        self._image = image
+        self._namespace = namespace
 
         self._template_dict = None
         self._function_provider = None
@@ -139,7 +145,9 @@ class InvokeContext(object):
         """
 
         container_manager = ContainerManager(docker_network_id=self._docker_network,
-                                             skip_pull_image=self._skip_pull_image)
+                                             skip_pull_image=self._skip_pull_image,
+                                             image=self._image,
+                                             namespace=self._namespace)
 
         lambda_runtime = LambdaRuntime(container_manager)
         return LocalLambdaRunner(local_runtime=lambda_runtime,
@@ -239,8 +247,8 @@ class InvokeContext(object):
 
         except Exception as ex:
             raise InvokeContextException("Could not read environment variables overrides from file {}: {}".format(
-                                         filename,
-                                         str(ex)))
+                filename,
+                str(ex)))
 
     @staticmethod
     def _setup_log_file(log_file):
