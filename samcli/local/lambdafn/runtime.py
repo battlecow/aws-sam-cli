@@ -75,7 +75,9 @@ class LambdaRuntime(object):
                                         memory_mb=function_config.memory,
                                         env_vars=env_vars,
                                         debug_port=debug_port,
-                                        debug_args=debug_args)
+                                        debug_args=debug_args,
+                                        image=self._container_manager.image,
+                                        namespace=self._container_manager.namespace)
 
             try:
 
