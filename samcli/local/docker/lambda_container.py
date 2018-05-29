@@ -5,6 +5,8 @@ from enum import Enum
 
 from .container import Container
 
+from .kube import Pod
+
 
 class Runtime(Enum):
     nodejs = "nodejs"
@@ -28,7 +30,7 @@ class Runtime(Enum):
         return any(value == item.value for item in cls)
 
 
-class LambdaContainer(Container):
+class LambdaContainer(Pod):
     """
     Represents a Lambda runtime container. This class knows how to setup entry points, environment variables,
     exposed ports etc specific to Lambda runtime container. The container management functionality (create/start/stop)

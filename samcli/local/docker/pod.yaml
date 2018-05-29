@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: aws-sam-pod
+  namespace: fleet
+spec:
+  restartPolicy: Never
+  containers:
+  - name: lambda
+    image: fetchruntime
+    imagePullPolicy: Never
+    args:
+      - echo
+      - "hello world"
