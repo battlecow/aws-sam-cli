@@ -19,7 +19,9 @@ class ContainerManager(object):
     def __init__(self,
                  docker_network_id=None,
                  docker_client=None,
-                 skip_pull_image=False):
+                 skip_pull_image=False,
+                 image=None,
+                 namespace="default"):
         """
         Instantiate the container manager
 
@@ -27,10 +29,11 @@ class ContainerManager(object):
         :param docker_client: Optional docker client object
         :param bool skip_pull_image: Should we pull new Docker container image?
         """
-
         self.skip_pull_image = skip_pull_image
         self.docker_network_id = docker_network_id
         self.docker_client = docker_client or docker.from_env()
+        self.image = image
+        self.namespace = namespace
 
     def run(self, container, input_data=None, warm=False):
         """
@@ -105,7 +108,7 @@ class ContainerManager(object):
         """
 
         try:
-            self.docker_client.images.get(image_name)
+            # self.docker_client.images.get(image_name)
             return True
         except docker.errors.ImageNotFound:
             return False
