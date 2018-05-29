@@ -4,6 +4,8 @@ metadata:
   name: aws-sam-pod
   namespace: default
 spec:
+  nodeSelector:
+    location: aws-devops
   restartPolicy: Never
   containers:
   - name: lambda
