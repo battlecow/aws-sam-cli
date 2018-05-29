@@ -5,7 +5,7 @@ from enum import Enum
 
 from .container import Container
 
-from .kube import Pod
+from .pod import Pod
 
 
 class Runtime(Enum):
@@ -47,7 +47,9 @@ class LambdaContainer(Pod):
                  memory_mb=128,
                  env_vars=None,
                  debug_port=None,
-                 debug_args=None):
+                 debug_args=None,
+                 image=None,
+                 namespace="default"):
         """
         Initializes the class
 
@@ -59,12 +61,14 @@ class LambdaContainer(Pod):
         :param dict env_vars: Optional. Dictionary containing environment variables passed to container
         :param int debug_port: Optional. Bind the runtime's debugger to this port
         :param string debug_args: Optional. Extra arguments passed to the entry point to setup debugging
+        :param string image: Optional. Overrides default lambci image
+        :param string namespace: Optional. Defaults to 'default' namespace
         """
-
         if not Runtime.has_value(runtime):
             raise ValueError("Unsupported Lambda runtime {}".format(runtime))
 
-        image = LambdaContainer._get_image(runtime)
+        if image is None:
+            image = LambdaContainer._get_image(runtime)
         ports = LambdaContainer._get_exposed_ports(debug_port)
         entry = LambdaContainer._get_entry_point(runtime, debug_port, debug_args)
         cmd = [handler]
@@ -76,7 +80,8 @@ class LambdaContainer(Pod):
                                               memory_limit_mb=memory_mb,
                                               exposed_ports=ports,
                                               entrypoint=entry,
-                                              env_vars=env_vars)
+                                              env_vars=env_vars,
+                                              namespace=namespace)
 
     @staticmethod
     def _get_exposed_ports(debug_port):
@@ -133,91 +138,91 @@ class LambdaContainer(Pod):
         if runtime == Runtime.java8.value:
 
             entrypoint = ["/usr/bin/java"] \
-                   + debug_args_list \
-                   + [
-                        "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,quiet=y,address=" + str(debug_port),
-                        "-XX:MaxHeapSize=1336935k",
-                        "-XX:MaxMetaspaceSize=157286k",
-                        "-XX:ReservedCodeCacheSize=78643k",
-                        "-XX:+UseSerialGC",
-                        # "-Xshare:on", doesn't work in conjunction with the debug options
-                        "-XX:-TieredCompilation",
-                        "-Djava.net.preferIPv4Stack=true",
-                        "-jar",
-                        "/var/runtime/lib/LambdaJavaRTEntry-1.0.jar",
-                   ]
+                         + debug_args_list \
+                         + [
+                             "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,quiet=y,address=" + str(debug_port),
+                             "-XX:MaxHeapSize=1336935k",
+                             "-XX:MaxMetaspaceSize=157286k",
+                             "-XX:ReservedCodeCacheSize=78643k",
+                             "-XX:+UseSerialGC",
+                             # "-Xshare:on", doesn't work in conjunction with the debug options
+                             "-XX:-TieredCompilation",
+                             "-Djava.net.preferIPv4Stack=true",
+                             "-jar",
+                             "/var/runtime/lib/LambdaJavaRTEntry-1.0.jar",
+                         ]
 
         elif runtime == Runtime.nodejs.value:
 
             entrypoint = ["/usr/bin/node"] \
-                   + debug_args_list \
-                   + [
-                       "--debug-brk=" + str(debug_port),
-                       "--nolazy",
-                       "--max-old-space-size=1229",
-                       "--max-new-space-size=153",
-                       "--max-executable-size=153",
-                       "--expose-gc",
-                       "/var/runtime/node_modules/awslambda/bin/awslambda",
-                   ]
+                         + debug_args_list \
+                         + [
+                             "--debug-brk=" + str(debug_port),
+                             "--nolazy",
+                             "--max-old-space-size=1229",
+                             "--max-new-space-size=153",
+                             "--max-executable-size=153",
+                             "--expose-gc",
+                             "/var/runtime/node_modules/awslambda/bin/awslambda",
+                         ]
 
         elif runtime == Runtime.nodejs43.value:
 
             entrypoint = ["/usr/local/lib64/node-v4.3.x/bin/node"] \
-                   + debug_args_list \
-                   + [
-                       "--debug-brk=" + str(debug_port),
-                       "--nolazy",
-                       "--max-old-space-size=2547",
-                       "--max-semi-space-size=150",
-                       "--max-executable-size=160",
-                       "--expose-gc",
-                       "/var/runtime/node_modules/awslambda/index.js",
-                   ]
+                         + debug_args_list \
+                         + [
+                             "--debug-brk=" + str(debug_port),
+                             "--nolazy",
+                             "--max-old-space-size=2547",
+                             "--max-semi-space-size=150",
+                             "--max-executable-size=160",
+                             "--expose-gc",
+                             "/var/runtime/node_modules/awslambda/index.js",
+                         ]
 
         elif runtime == Runtime.nodejs610.value:
 
             entrypoint = ["/var/lang/bin/node"] \
-                   + debug_args_list \
-                   + [
-                       "--debug-brk=" + str(debug_port),
-                       "--nolazy",
-                       "--max-old-space-size=2547",
-                       "--max-semi-space-size=150",
-                       "--max-executable-size=160",
-                       "--expose-gc",
-                       "/var/runtime/node_modules/awslambda/index.js",
-                   ]
+                         + debug_args_list \
+                         + [
+                             "--debug-brk=" + str(debug_port),
+                             "--nolazy",
+                             "--max-old-space-size=2547",
+                             "--max-semi-space-size=150",
+                             "--max-executable-size=160",
+                             "--expose-gc",
+                             "/var/runtime/node_modules/awslambda/index.js",
+                         ]
 
         elif runtime == Runtime.nodejs810.value:
 
             entrypoint = ["/var/lang/bin/node"] \
-                    + debug_args_list \
-                    + [
-                        # Node8 requires the host to be explicitly set in order to bind to localhost
-                        # instead of 127.0.0.1. https://github.com/nodejs/node/issues/11591#issuecomment-283110138
-                        "--inspect-brk=0.0.0.0:" + str(debug_port),
-                        "--nolazy",
-                        "--expose-gc",
-                        "--max-semi-space-size=150",
-                        "--max-old-space-size=2707",
-                        "/var/runtime/node_modules/awslambda/index.js",
-                    ]
+                         + debug_args_list \
+                         + [
+                             # Node8 requires the host to be explicitly set in order to bind to localhost
+                             # instead of 127.0.0.1. https://github.com/nodejs/node/issues/11591#issuecomment-283110138
+                             "--inspect-brk=0.0.0.0:" + str(debug_port),
+                             "--nolazy",
+                             "--expose-gc",
+                             "--max-semi-space-size=150",
+                             "--max-old-space-size=2707",
+                             "/var/runtime/node_modules/awslambda/index.js",
+                         ]
 
         elif runtime == Runtime.python27.value:
 
             entrypoint = ["/usr/bin/python2.7"] \
-                   + debug_args_list \
-                   + [
-                       "/var/runtime/awslambda/bootstrap.py"
-                   ]
+                         + debug_args_list \
+                         + [
+                             "/var/runtime/awslambda/bootstrap.py"
+                         ]
 
         elif runtime == Runtime.python36.value:
 
             entrypoint = ["/var/lang/bin/python3.6"] \
-                   + debug_args_list \
-                   + [
-                       "/var/runtime/awslambda/bootstrap.py"
-                   ]
+                         + debug_args_list \
+                         + [
+                             "/var/runtime/awslambda/bootstrap.py"
+                         ]
 
         return entrypoint
