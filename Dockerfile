@@ -1,12 +1,9 @@
-FROM python:2
+FROM python:2-slim
 
-COPY . /workdir
+COPY ./dist /workdir
 WORKDIR /workdir
 
-RUN python setup.py sdist
-
-FROM python:2-slim
-COPY --from=0 /workdir/dist /workdir/
-RUN pip install /workdir/*
+RUN pip install /workdir/* && \
+	rm -rf /workdir
 
 ENTRYPOINT ['/usr/local/bin/sam']
