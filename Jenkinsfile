@@ -1,5 +1,7 @@
 #!/usr/bin/env groovy
 
+pipeline {
+
  agent {
     kubernetes {
       label 'pypi'
@@ -14,6 +16,7 @@ spec:
   containers:
   - name: pypi
     image: docker.jamf.build/python:2
+    tty: true
     command:
     - cat
     volumeMounts:
@@ -27,36 +30,39 @@ spec:
         items:
           - key: .pypirc
             path: .pypirc
-            mode: 0555
-    tty: true
 """
     }
   }
 
-node('pypi') {
-  stage('Build python package') {
-    container('pypi') {
-      checkout scm
-      sh 'python setup.py sdist upload -r local'
-      stash(name: "build")
+   stages {
+    stage('Build python package') {
+      steps {
+        container('pypi') {
+          checkout scm
+          sh 'python setup.py sdist upload -r local'
+          stash(name: "build")
+        }
+      }
     }
-  }
-}
 
+    stage('Build Docker image') {
 
-node('docker-build') {
-  def dockerImage = 'docker.jamf.one/sam-kube-cli'
-  def tag = 'latest'
+      environment {
+        dockerImage = "docker.jamf.one/sam-kube-cli"
+        tag = 'latest'
+      }
 
-  stage('Build Docker image') {
-    container('docker-build') {
-      unstash("build")
-      sh "docker build -t ${dockerImage}:${tag} ."
-    }
-  }
-  stage('Push Fleet Docker Image') {
-    container('docker-build') {
-      sh "docker push ${dockerImage}:${tag}"
+      agent { node { label 'docker-build' } }
+
+      steps {
+        container('docker-build') {
+          unstash("build")
+          sh "docker build -t ${dockerImage}:${tag} ."
+        }
+        container('docker-build') {
+          sh "docker push ${dockerImage}:${tag}"
+        }
+      }
     }
   }
 }
