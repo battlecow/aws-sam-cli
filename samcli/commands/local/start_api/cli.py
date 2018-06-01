@@ -54,12 +54,12 @@ def cli(ctx,
 
         # Common Options for Lambda Invoke
         template, env_vars, debug_port, debug_args, docker_volume_basedir,
-        docker_network, log_file, skip_pull_image, profile, is_kubernetes
+        docker_network, log_file, skip_pull_image, profile, kubernetes
         ):
     # All logic must be implemented in the ``do_cli`` method. This helps with easy unit testing
 
     do_cli(ctx, host, port, static_dir, template, env_vars, debug_port, debug_args, docker_volume_basedir,
-           docker_network, log_file, skip_pull_image, profile, is_kubernetes, image, namespace)  # pragma: no cover
+           docker_network, log_file, skip_pull_image, profile, kubernetes, image, namespace)  # pragma: no cover
 
 
 def do_cli(ctx, host, port, static_dir, template, env_vars, debug_port, debug_args,  # pylint: disable=R0914
