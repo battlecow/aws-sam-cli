@@ -21,6 +21,7 @@ class ContainerManager(object):
                  docker_client=None,
                  skip_pull_image=False,
                  image=None,
+                 is_kubernetes=False,
                  namespace="default"):
         """
         Instantiate the container manager
@@ -33,6 +34,7 @@ class ContainerManager(object):
         self.docker_network_id = docker_network_id
         self.docker_client = docker_client or docker.from_env()
         self.image = image
+        self.is_kubernetes = is_kubernetes
         self.namespace = namespace
 
     def run(self, container, input_data=None, warm=False):

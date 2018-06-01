@@ -167,7 +167,8 @@ class LambdaRuntime(object):
         decompressed_dir = None
 
         try:
-            if os.path.isfile(code_path) and code_path.endswith(self.SUPPORTED_ARCHIVE_EXTENSIONS):
+            if os.path.isfile(code_path) and code_path.endswith(
+                    self.SUPPORTED_ARCHIVE_EXTENSIONS) and not self._container_manager.is_kubernetes:
 
                 decompressed_dir = _unzip_file(code_path)
                 yield decompressed_dir
