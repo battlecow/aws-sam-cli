@@ -101,6 +101,10 @@ def invoke_common_options(f):
         click.option('--profile',
                      help="Specify which AWS credentials profile to use."),
 
+        click.option('--kubernetes',
+                     is_flag=True,
+                     help="Specify whether to use Kubernetes for runtime instead of local Docker"),
+
     ]
 
     # Reverse the list to maintain ordering of options in help text printed with --help

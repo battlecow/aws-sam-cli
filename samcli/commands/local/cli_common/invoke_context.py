@@ -45,6 +45,7 @@ class InvokeContext(object):
                  log_file=None,
                  skip_pull_image=None,
                  aws_profile=None,
+                 is_kubernetes=False,
                  image=None,
                  namespace='default'):
         """
@@ -59,6 +60,7 @@ class InvokeContext(object):
         :param string log_file: Path to a file to send container output to. If the file does not exist, it will be
             created
         :param bool skip_pull_image: Should we skip pulling the Docker container image?
+        :param bool is_kubernetes: Runtime environment should attempt kubernetes
         :param string aws_profile: Name of the profile to fetch AWS credentials from
         :param string image: Kubernetes image to use
         :param string namespace: Kubernetes namespace to deploy pod
@@ -74,6 +76,7 @@ class InvokeContext(object):
         self._log_file = log_file
         self._skip_pull_image = skip_pull_image
         self._aws_profile = aws_profile
+        self._is_kubernetes = is_kubernetes
         self._image = image
         self._namespace = namespace
 
@@ -96,7 +99,8 @@ class InvokeContext(object):
         self._env_vars_value = self._get_env_vars_value(self._env_vars_file)
         self._log_file_handle = self._setup_log_file(self._log_file)
 
-        self._check_docker_connectivity()
+        if self._is_kubernetes is False:
+            self._check_docker_connectivity()
 
         return self
 
