@@ -57,7 +57,7 @@ spec:
       steps {
         container('docker-build') {
           unstash("build")
-          sh "docker build -t ${dockerImage}:${tag} ."
+          sh "docker build --no-cache -t ${dockerImage}:${tag} ."
         }
         container('docker-build') {
           sh "docker push ${dockerImage}:${tag}"
@@ -77,7 +77,7 @@ spec:
       steps {
         container('docker-build') {
           unstash("build")
-          sh "docker build -t ${dockerImage}:${tag} . -f Dockerfile-lambda"
+          sh "docker build --no-cache -t ${dockerImage}:${tag} . -f Dockerfile-lambda"
         }
         container('docker-build') {
           sh "docker push ${dockerImage}:${tag}"
