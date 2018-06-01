@@ -64,6 +64,26 @@ spec:
         }
       }
     }
+
+    stage('Build Lambda Docker image') {
+
+      environment {
+        dockerImage = "docker.jamf.one/lambda"
+        tag = 'java8'
+      }
+
+      agent { node { label 'docker-build' } }
+
+      steps {
+        container('docker-build') {
+          unstash("build")
+          sh "docker build -t ${dockerImage}:${tag} . -f Dockerfile-lambda"
+        }
+        container('docker-build') {
+          sh "docker push ${dockerImage}:${tag}"
+        }
+      }
+    }
   }
 }
 

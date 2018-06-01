@@ -1,0 +1,10 @@
+FROM lambci/lambda:java8
+
+USER root
+
+RUN yum update && \
+	yum install -y python27-pip || true && \
+	pip install -i https://artifactory.jamf.build/artifactory/api/pypi/pypi/simple --extra-index-url https://pypi.python.org/simple aws-sam-cli && \
+	yum clean all
+
+USER sbx_user1051
