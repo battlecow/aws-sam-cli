@@ -9,8 +9,8 @@ spec:
   restartPolicy: Never
   containers:
   - name: lambda
-    image: lambci/lambda
-    imagePullPolicy: Never
+    image: lambci/lambda:latest
+    imagePullPolicy: IfNotPresent
     args:
       - echo
       - "hello world"
